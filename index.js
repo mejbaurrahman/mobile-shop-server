@@ -72,6 +72,7 @@ app.get('/', (req, res)=>{
     res.send('Welcome to Mobile Shop');
 })
 
+
 app.listen(port, ()=>{
-    console.log(`Listening to port`, port);
+    console.log(`Listening port`, port);
 })
