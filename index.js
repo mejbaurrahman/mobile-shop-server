@@ -30,7 +30,7 @@ const verifyJWT =(req, res, next)=>{
 async function run(){
     try{
         console.log('Connected Succesfully');
-      
+        const users = client.db('mobileShop').collection('users');
         // const verifyAdmin = async (req, res, next)=>{
         //     const decodedEmail = req.decoded.email;
         //     const q = {
@@ -60,7 +60,30 @@ async function run(){
            
         })
 
-   
+        app.get('/users/admin/:email', async(req, res)=>{
+            const email = req.params.email;
+            const query={
+                email:email
+            }
+            const user = await users.findOne(query);
+            res.send({isAdmin: user?.role==='admin'})
+
+        })
+        app.get('/users/seller/:email', async(req, res)=>{
+            const email = req.params.email;
+            const query={
+                email:email
+            }
+            const user = await users.findOne(query);
+            res.send({isSeller: user?.role==='seller'})
+
+        })
+        app.post('/users', async (req, res)=>{
+            const data = req.body;
+            console.log(data)
+            const result = await users.insertOne(data);
+            res.send(result);
+        })
      
     }finally{
         // await client.close();
