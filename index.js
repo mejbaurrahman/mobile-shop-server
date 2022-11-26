@@ -32,6 +32,8 @@ async function run(){
         console.log('Connected Succesfully');
         const users = client.db('mobileShop').collection('users');
         const categories = client.db('mobileShop').collection('categories');
+        const products = client.db('mobileShop').collection('products');
+       
         const verifyAdmin = async (req, res, next)=>{
             const decodedEmail = req.decoded.email;
             const q = {
@@ -40,6 +42,18 @@ async function run(){
 
             const user = await users.findOne(q);
             if(user?.role !=='admin'){
+                return res.status(403).send({message:'forbidden access'})
+            }
+            next();
+        }
+        const verifySeller = async (req, res, next)=>{
+            const decodedEmail = req.decoded.email;
+            const q = {
+                email:decodedEmail
+            }
+
+            const user = await users.findOne(q);
+            if(user?.role !=='seller'){
                 return res.status(403).send({message:'forbidden access'})
             }
             next();
@@ -61,7 +75,7 @@ async function run(){
             }
            
         })
-
+        
         app.get('/users/admin/:email', async(req, res)=>{
             const email = req.params.email;
             const query={
@@ -77,7 +91,7 @@ async function run(){
                 email:email
             }
             const user = await users.findOne(query);
-            res.send({isAdmin: user?.role==='admin'})
+            res.send({isBuyer: user?.role==='buyer'})
 
         })
         app.get('/users/seller/:email', async(req, res)=>{
@@ -89,6 +103,20 @@ async function run(){
             res.send({isSeller: user?.role==='seller'})
 
         })
+        app.get('/categories', async(req, res)=>{
+            const query= {};
+            const result = await categories.find({}).toArray();
+            res.send(result);
+        })
+
+        app.get('/products', async(req, res)=>{
+            const queryEmail = req.query.email;
+            const query = {
+                sellerEmail: queryEmail
+            }
+            const result = await products.find(query).toArray();
+            res.send(result);
+        })
         app.post('/users', async (req, res)=>{
             const data = req.body;
             console.log(data)
@@ -98,10 +126,39 @@ async function run(){
 
         app.post('/categories',verifyJWT, verifyAdmin, async(req, res)=>{
             const data = req.body;
-            console.log(data)
+            // console.log(data)
             const result = await categories.insertOne(data);
             res.send(result);
 
+        })
+        app.post('/products',verifyJWT, verifySeller, async(req, res)=>{
+            const data = req.body;
+            console.log(data)
+            const result = await products.insertOne(data);
+            res.send(result);
+
+        })
+        app.patch('/products/:id', async(req, res)=>{
+            const data= req.body;
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)}
+            const option={
+                upsert: true
+            }
+            const updateDoc = {
+                $set:data
+            }
+            const result = await products.updateOne(filter, updateDoc, option);
+            res.send(result)
+
+        })
+
+        app.delete('/products/:id',verifyJWT,verifySeller, async(req,res)=>{
+            
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await products.deleteOne(query);
+            res.send(result)
         })
      
     }finally{
