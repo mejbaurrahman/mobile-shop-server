@@ -31,18 +31,20 @@ async function run(){
     try{
         console.log('Connected Succesfully');
         const users = client.db('mobileShop').collection('users');
-        // const verifyAdmin = async (req, res, next)=>{
-        //     const decodedEmail = req.decoded.email;
-        //     const q = {
-        //         email:decodedEmail
-        //     }
+        const categories = client.db('mobileShop').collection('categories');
+        const verifyAdmin = async (req, res, next)=>{
+            const decodedEmail = req.decoded.email;
+            const q = {
+                email:decodedEmail
+            }
 
-        //     const user = await users.findOne(q);
-        //     if(user?.role !=='admin'){
-        //         return res.status(403).send({message:'forbidden access'})
-        //     }
-        //     next();
-        // }
+            const user = await users.findOne(q);
+            if(user?.role !=='admin'){
+                return res.status(403).send({message:'forbidden access'})
+            }
+            next();
+        }
+
         app.get('/jwt', async(req, res)=>{
             const email = req.query.email;
             const query={
@@ -69,6 +71,15 @@ async function run(){
             res.send({isAdmin: user?.role==='admin'})
 
         })
+        app.get('/users/buyer/:email', async(req, res)=>{
+            const email = req.params.email;
+            const query={
+                email:email
+            }
+            const user = await users.findOne(query);
+            res.send({isAdmin: user?.role==='admin'})
+
+        })
         app.get('/users/seller/:email', async(req, res)=>{
             const email = req.params.email;
             const query={
@@ -83,6 +94,14 @@ async function run(){
             console.log(data)
             const result = await users.insertOne(data);
             res.send(result);
+        })
+
+        app.post('/categories',verifyJWT, verifyAdmin, async(req, res)=>{
+            const data = req.body;
+            console.log(data)
+            const result = await categories.insertOne(data);
+            res.send(result);
+
         })
      
     }finally{
