@@ -108,6 +108,24 @@ async function run(){
             const result = await categories.find({}).toArray();
             res.send(result);
         })
+        app.get('/product/:id', async(req, res)=>{
+            const id= req.params.id;
+            const query = {_id:ObjectId(id)}
+            const result = await products.findOne(query);
+            res.send(result);
+        })
+        app.get('/category/:id', async(req, res)=>{
+            const id= req.params.id;
+            const q = {_id:ObjectId(id)}
+            const r = await categories.findOne(q);
+            const query= {
+                category:r.category
+            }
+
+            const result = await products.find(query).toArray();
+            const categoryName = r.category;
+            res.send({result, categoryName});
+        })
 
         app.get('/products', async(req, res)=>{
             const queryEmail = req.query.email;
@@ -116,6 +134,36 @@ async function run(){
             }
             const result = await products.find(query).toArray();
             res.send(result);
+        })
+        app.get('/allproducts', async(req, res)=>{
+            const result = await products.find({}).toArray();
+            res.send(result);
+        })        
+
+        app.get('/categories', async(req, res)=>{
+            const categoryQ= req.query.category;
+            const query={
+                category: categoryQ
+            }
+            const result = await categories.findOne(query);
+            res.json(result);
+
+        })
+        app.get('/addvertisedproducts', async(req, res)=>{
+            const queryEmail = req.query.email;
+            const query = {
+                status:'advertised'
+            }
+            const result = await products.find(query).toArray();
+            res.send(result);
+        })
+        app.get('/users', async(req, res)=>{
+            const queryEmail= req.query.email;
+            const query={
+                email:queryEmail
+            }
+            const result = await users.findOne(query);
+            res.send(result)
         })
         app.post('/users', async (req, res)=>{
             const data = req.body;
