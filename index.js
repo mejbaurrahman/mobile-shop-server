@@ -176,7 +176,7 @@ async function run(){
             res.send(result);
         })
 
-        app.get('/buyers',verifyJWT, verifySeller, async(req, res)=>{
+        app.get('/mybuyers',verifyJWT, verifySeller, async(req, res)=>{
             const email = req.query.email;
             let buyers =[];
             const query = {
@@ -199,7 +199,7 @@ async function run(){
             res.send(result);
         })
 
-        app.get('/sellers', async(req, res)=>{
+        app.get('/sellers',verifyJWT,verifyAdmin, async(req, res)=>{
             
             const query={
                 role:'seller'
@@ -211,7 +211,7 @@ async function run(){
             const result = await products.find({}).toArray();
             res.send(result);
         })
-        app.get('/rolebuyers', async(req, res)=>{
+        app.get('/buyers',verifyJWT,verifyAdmin, async(req, res)=>{
             
             const query={
                 role: 'buyer'
