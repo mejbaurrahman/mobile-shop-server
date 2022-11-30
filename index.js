@@ -176,9 +176,8 @@ async function run(){
             res.send(result);
         })
 
-        app.get('/buyers', async(req, res)=>{
+        app.get('/buyers',verifyJWT, verifySeller, async(req, res)=>{
             const email = req.query.email;
-            // console.log(email)
             let buyers =[];
             const query = {
                 seller: email,
@@ -191,7 +190,7 @@ async function run(){
             
             res.send(soldOrders);
         })
-        app.get('/orders', async(req, res)=>{
+        app.get('/myorders',verifyJWT,verifyBuyer, async(req, res)=>{
             const queryEmail = req.query.email;
             const query = {
                 buyerEmail: queryEmail
